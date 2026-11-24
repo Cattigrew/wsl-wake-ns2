@@ -18,6 +18,17 @@ wsl.exe -d Ubuntu -u root -- btmgmt info
 
 记下对应的控制器编号，例如 `hci0`。如果要使用的源 MAC 与适配器原地址不同，控制器和驱动还需要支持设置公共地址，可在 `btmgmt info` 的 `supported options` 中查看 `public-address`。脚本运行期间会独占所选适配器，已有蓝牙连接可能中断。
 
+## 用 Android 捕捉 Joy-Con 2 唤醒广播
+
+参考项目使用 Android 手机上的 **nRF Connect for Mobile** 观察右 Joy-Con 2 按下 HOME 时短暂出现的 BLE 广播。手机只需扫描，手柄保持与自己的 Switch 2 配对即可。[捕捉方法来源：Switch2-RPI-Wake](https://github.com/Bill-git1/Switch2-RPI-Wake#capture-your-own-joy-con-2-wake-packet)
+
+1. 将手机放在已配对的右 Joy-Con 2 旁边，打开 nRF Connect 并开始扫描。先看一眼此时有哪些设备，方便辨认稍后出现的广播。
+2. 让 Switch 2 进入普通休眠。保持手机扫描，按一下右 Joy-Con 2 的 **HOME** 键，观察主机是否醒来。
+3. 在扫描结果中展开按键时出现或更新的记录，查看 **Manufacturer Specific Data**。参考项目观察到的 Nintendo 公司标识为 `0x0553`，在原始广播中按小端顺序显示为 `53 05`。附近可能有其他 Nintendo 设备，结合按键时刻和手机靠近手柄时的信号强度判断。
+4. 查看同一条记录的设备地址和完整原始广播数据。参考项目捕捉到的 31 字节广播以 `02 01 06 1B FF 53 05` 开头，其中 `02 01 06` 是 Flags 字段。仅复制厂商数据会漏掉开头的字段。若只看到较短的片段，回到完整广播视图核对；保留实际捕捉到的尾部零字节。
+
+漏掉广播时，可让主机再次进入休眠，确认手机已经开始扫描后再按 HOME。没有 Android 手机时，上游也提供了使用树莓派和 BlueZ `btmon` 观察广播的方法。[树莓派捕捉说明](https://github.com/Bill-git1/Switch2-RPI-Wake#optional-capture-with-the-pi)
+
 ## 首次运行
 
 在 PowerShell 中下载项目并进入目录：
